@@ -2,6 +2,8 @@ package dev.alenajam.opendialer;
 
 import android.app.Application;
 
+import com.samsung.sip.SipPhoneAccount;
+
 import dagger.hilt.android.HiltAndroidApp;
 import dev.alenajam.opendialer.helper.NotificationHelper;
 import dev.alenajam.opendialer.core.common.SharedPreferenceHelper;
@@ -14,5 +16,6 @@ public class App extends Application {
         super.onCreate();
         NotificationHelper.setupNotificationChannels(this);
         SharedPreferenceHelper.init(this);
+        SipPhoneAccount.INSTANCE.register(this);
     }
 }

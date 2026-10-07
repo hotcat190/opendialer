@@ -102,6 +102,7 @@ tasks.register("validateReleaseVersion") {
 
 dependencies {
     implementation(platform(libs.firebase.bom))
+    implementation(project(":sip"))
     implementation(libs.firebase.crashlytics)
     implementation(libs.firebase.analytics)
 

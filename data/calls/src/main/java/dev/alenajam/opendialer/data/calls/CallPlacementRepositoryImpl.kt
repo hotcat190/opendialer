@@ -21,8 +21,13 @@ class CallPlacementRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
 ) : CallPlacementRepository {
     @SuppressLint("MissingPermission")
-    override fun placeCall(number: String, account: CallAccount?): CallPlacementResult =
-        place(Uri.fromParts(PhoneAccount.SCHEME_TEL, number, null), account)
+    override fun placeCall(number: String, account: CallAccount?): CallPlacementResult {
+        // TODO: change app to allow user to select which method (tel/sip) to place new calls
+        if (number == "1000") {
+            return place(Uri.fromParts(PhoneAccount.SCHEME_SIP, number, null), account)
+        }
+        return place(Uri.fromParts(PhoneAccount.SCHEME_TEL, number, null), account)
+    }
 
     @SuppressLint("MissingPermission")
     override fun placeVoicemailCall(account: CallAccount?): CallPlacementResult =
