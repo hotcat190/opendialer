@@ -259,6 +259,7 @@ public class PjCamera2
             cm.openCamera(ci.id, camStateCallback, handler);
         } catch (Exception e) {
             Log.d(TAG, e.getMessage());
+            e.printStackTrace();
             Stop();
             return -10;
         }

@@ -8,6 +8,7 @@ import android.telecom.PhoneAccount
 import android.telecom.PhoneAccountHandle
 import android.telecom.TelecomManager
 import android.telephony.SubscriptionManager
+import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.alenajam.opendialer.core.common.PermissionUtils
 import dev.alenajam.opendialer.core.common.telecom.CallAccount
@@ -49,12 +50,18 @@ class CallPlacementRepositoryImpl @Inject constructor(
             return CallPlacementResult.Placed
         }
 
+        Log.d("CallPlacementRepository", "telecomManager.callCapablePhoneAccounts size: ${telecomManager.callCapablePhoneAccounts.size}")
         val accounts = telecomManager.callCapablePhoneAccounts.mapIndexed { index, handle ->
             handle.toCallAccount(telecomManager, index)
         }
-        if (accounts.isEmpty()) return CallPlacementResult.Unavailable
+        if (accounts.isEmpty()) {
+            Log.d("CallPlacementRepository", "accounts is empty")
+            return CallPlacementResult.Unavailable
+        }
         if (accounts.size == 1) {
+            Log.d("CallPlacementRepository", "accounts size == 1")
             telecomManager.placeCall(address, accounts.single().handle.extras())
+            Log.d("CallPlacementRepository", "${accounts.single().label}")
             return CallPlacementResult.Placed
         }
 
