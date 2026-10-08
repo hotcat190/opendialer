@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    id("kotlin-kapt")
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -24,8 +26,19 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.test.ext.junit)
+
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
 }
 
 kotlin {
     jvmToolchain(21)
+}
+
+kapt {
+    correctErrorTypes = true
+}
+
+hilt {
+    enableAggregatingTask = true
 }

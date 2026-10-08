@@ -16,6 +16,7 @@ import dev.alenajam.opendialer.core.common.telecom.CallPlacementRepository
 import dev.alenajam.opendialer.core.common.telecom.CallPlacementResult
 import javax.inject.Inject
 import javax.inject.Singleton
+import androidx.core.net.toUri
 
 @Singleton
 class CallPlacementRepositoryImpl @Inject constructor(
@@ -26,6 +27,18 @@ class CallPlacementRepositoryImpl @Inject constructor(
         // TODO: change app to allow user to select which method (tel/sip) to place new calls
         if (number == "1000") {
             return place(Uri.fromParts(PhoneAccount.SCHEME_SIP, number, null), account)
+        }
+        if (number == "1001") {
+            val telecomManager = context.getSystemService(TelecomManager::class.java)
+            val account = telecomManager.getDefaultOutgoingPhoneAccount(PhoneAccount.SCHEME_SIP)
+            val extras = Bundle().apply {
+                putParcelable(
+                    TelecomManager.EXTRA_INCOMING_CALL_ADDRESS,
+                    "sip:1001".toUri()
+                )
+            }
+            telecomManager.addNewIncomingCall(account, extras)
+            return CallPlacementResult.Placed
         }
         return place(Uri.fromParts(PhoneAccount.SCHEME_TEL, number, null), account)
     }
@@ -46,6 +59,9 @@ class CallPlacementRepositoryImpl @Inject constructor(
             ?: telecomManager.getDefaultOutgoingPhoneAccount(address.scheme)
 
         if (account != null) {
+            Log.d("CallPlacementRepositoryImpl", "address ${address.toString()}")
+            Log.d("CallPlacementRepositoryImpl", "uri ${address.scheme}")
+            Log.d("CallPlacementRepositoryImpl", "account $account")
             telecomManager.placeCall(address, account.extras())
             return CallPlacementResult.Placed
         }

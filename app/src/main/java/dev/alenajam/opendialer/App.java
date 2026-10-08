@@ -3,6 +3,7 @@ package dev.alenajam.opendialer;
 import android.app.Application;
 
 import com.samsung.sip.SipPhoneAccount;
+import com.samsung.sip.pjsua.PjsuaManager;
 
 import dagger.hilt.android.HiltAndroidApp;
 import dev.alenajam.opendialer.helper.NotificationHelper;

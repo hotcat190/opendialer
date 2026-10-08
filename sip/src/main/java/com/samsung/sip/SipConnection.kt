@@ -1,6 +1,5 @@
 package com.samsung.sip
 
-import android.content.Context
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
@@ -8,80 +7,74 @@ import android.telecom.Connection
 import android.telecom.DisconnectCause
 import android.telecom.TelecomManager.PRESENTATION_ALLOWED
 import android.util.Log
+import com.samsung.sip.callcontroller.SipCallController
 
 class SipConnection(
-    private val context: Context,
-    private val destination: Uri?
-) : Connection() {
+    private val callController: SipCallController,
+    address: Uri
+) : Connection(), SipCallController.Listener {
     private val TAG = "SipConnection"
 
-    private val handler = Handler(Looper.getMainLooper())
-
     init {
+        Log.d(TAG, "SipConnection init{}")
         setInitializing()
-        Log.d(TAG, "SipConnection initializing")
-        setAddress(destination, PRESENTATION_ALLOWED)
+        Log.d(TAG, "before ${address.toString()}")
+        setAddress(address, PRESENTATION_ALLOWED)
+        Log.d(TAG, "after ${address.toString()}")
         audioModeIsVoip = true
         connectionCapabilities = CAPABILITY_MUTE or CAPABILITY_SUPPORT_HOLD or CAPABILITY_HOLD
-        setInitialized()
-        Log.d(TAG, "SipConnection initialized")
+
+        callController.setListener(this)
     }
 
     override fun onAnswer() {
         Log.d(TAG, "SipConnection onAnswer")
-        super.onAnswer()
-        setActive()
+        callController.answer()
     }
 
     override fun onDisconnect() {
         Log.d(TAG, "SipConnection onDisconnect")
-        super.onDisconnect()
-        disconnect()
+        callController.hangup()
     }
 
     override fun onHold() {
         Log.d(TAG, "SipConnection onHold")
-        super.onHold()
-        setOnHold()
+        callController.hold()
     }
 
     override fun onReject() {
         Log.d(TAG, "SipConnection onReject")
-        super.onReject()
-        disconnect()
+        callController.reject()
     }
 
     override fun onUnhold() {
         Log.d(TAG, "SipConnection onUnhold")
-        super.onUnhold()
-        setActive()
+        callController.resume()
     }
 
-    fun startFakeOutgoingCall() {
-        Log.d(TAG, "SipConnection startFakeOutgoingCall")
+    // ---------------------------
+    // SipCallController.Listener
+    // ---------------------------
+
+    override fun onDialing() {
         setDialing()
-
-        handler.postDelayed({
-            if (state == STATE_DIALING) {
-                Log.d(TAG, "SipConnection faking answer by setActive()")
-                setActive()
-            }
-        }, 2000)
     }
 
-    fun startFakeIncomingCall() {
-        Log.d(TAG, "SipConnection startFakeIncomingCall")
+    override fun onRinging() {
         setRinging()
     }
 
-    private fun disconnect() {
-        Log.d(TAG, "SipConnection disconnect")
-        if (state == STATE_DISCONNECTED) {
-            return
-        }
-        setDisconnected(DisconnectCause(DisconnectCause.LOCAL))
-        handler.removeCallbacksAndMessages(null)
+    override fun onActive() {
+        setActive()
+    }
+
+    override fun onHolding() {
+        setOnHold()
+    }
+
+    override fun onDisconnected(cause: Int) {
+        setDisconnected(DisconnectCause(cause))
+        callController.clearListener()
         destroy()
-        Log.d(TAG, "SipConnection destroyed")
     }
 }
