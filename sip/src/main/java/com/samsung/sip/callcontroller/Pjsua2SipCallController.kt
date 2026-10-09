@@ -9,6 +9,7 @@ import org.pjsip.pjsua2.pjsip_inv_state
 class Pjsua2SipCallController (
     private val pjsuaManager: PjsuaManager
 ) : SipCallController {
+
     private var listener: SipCallController.Listener? = null
     private var call: PjsuaCall? = null
 
@@ -20,22 +21,31 @@ class Pjsua2SipCallController (
         listener = null
     }
 
+    fun onPjuaStateChangedImpl(state: Int) {
+        when (state) {
+            pjsip_inv_state.PJSIP_INV_STATE_CALLING -> listener?.onDialing()
+            pjsip_inv_state.PJSIP_INV_STATE_INCOMING -> listener?.onRinging()
+            pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED -> listener?.onActive()
+            pjsip_inv_state.PJSIP_INV_STATE_DISCONNECTED -> listener?.onDisconnected(
+                DisconnectCause.REMOTE
+            )
+        }
+    }
+
     override fun startOutgoingCall(destination: String) {
         call = pjsuaManager.makeCall(destination)
-        call!!.setListener(
-            object : PjsuaCall.Listener {
-                override fun onPjsuaStateChanged(state: Int) {
-                    when (state) {
-                        pjsip_inv_state.PJSIP_INV_STATE_CALLING -> listener?.onDialing()
-                        pjsip_inv_state.PJSIP_INV_STATE_EARLY -> listener?.onRinging()
-                        pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED -> listener?.onActive()
-                        pjsip_inv_state.PJSIP_INV_STATE_DISCONNECTED -> listener?.onDisconnected(
-                            DisconnectCause.REMOTE
-                        )
-                    }
-                }
-            }
-        )
+        call!!.setListener(object : PjsuaCall.Listener {
+            override fun onPjsuaStateChanged(state: Int)
+                = onPjuaStateChangedImpl(state)
+        })
+    }
+
+    fun setCall(call: PjsuaCall) {
+        this.call = call
+        call.setListener(object : PjsuaCall.Listener {
+            override fun onPjsuaStateChanged(state: Int)
+                = onPjuaStateChangedImpl(state)
+        })
     }
 
     override fun answer() {

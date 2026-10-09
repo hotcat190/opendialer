@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application>
         <service
             android:name=".SipConnectionService"
-            android:enabled="true"
             android:exported="true"
             android:permission="android.permission.BIND_TELECOM_CONNECTION_SERVICE">
             <intent-filter>
@@ -13,6 +13,12 @@
                 />
             </intent-filter>
         </service>
+
+        <service
+            android:name=".SipForegroundService"
+            android:enabled="true"
+            android:exported="false"
+        />
     </application>
 
 </manifest>

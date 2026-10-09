@@ -1,9 +1,8 @@
 package com.samsung.sip.pjsua
 
-import android.content.Context
 import android.util.Log
+import com.samsung.sip.callcontroller.PjsuaIncomingCallListener
 import javax.inject.Inject
-import dagger.hilt.android.qualifiers.ApplicationContext
 import org.pjsip.pjsua2.AccountConfig
 import org.pjsip.pjsua2.AudioMedia
 import org.pjsip.pjsua2.AuthCredInfo
@@ -26,7 +25,7 @@ class PjsuaManager @Inject constructor() {
         const val ACC_DOMAIN = "107.98.46.135"
         const val ACC_USER   = "1001"
         const val ACC_PASSWD = "1234"
-        const val ACC_ID_URI = "Kotlin <sip:" + ACC_USER + "@" + ACC_DOMAIN + ">"
+        const val ACC_ID_URI = "Kotlin <sip:$ACC_USER@$ACC_DOMAIN>"
         const val ACC_REGISTRAR = "sip:${ACC_DOMAIN}"
         const val ACC_PROXY  = "sip:${ACC_DOMAIN};lr"
 
@@ -113,6 +112,7 @@ class PjsuaManager @Inject constructor() {
 
         val prm = CallOpParam(true)
         prm.opt.videoCount = 0
+        prm.txOption.localUri
 
         call.makeCall(destination, prm)
 
@@ -138,14 +138,25 @@ class PjsuaManager @Inject constructor() {
         calls.remove(call.id)
     }
 
+    fun getCall(callId: Int): PjsuaCall? {
+        return calls[callId]
+    }
+
+    private var incomingCallListener: PjsuaIncomingCallListener? = null
+
+    fun setIncomingCallListener(listener: PjsuaIncomingCallListener) {
+        incomingCallListener = listener
+    }
+
     internal fun onIncomingCall(call: PjsuaCall) {
         registerCall(call)
+        incomingCallListener?.onIncomingCall(call)
     }
 
     private fun createAccount() {
         val accConfig = AccountConfig()
         accConfig.idUri = ACC_ID_URI
-        accConfig.regConfig.registrarUri
+        accConfig.regConfig.registrarUri = ACC_REGISTRAR
         accConfig.sipConfig.authCreds.add(
             AuthCredInfo(
                 "Digest", "*", ACC_USER, 0,
@@ -172,14 +183,18 @@ class PjsuaManager @Inject constructor() {
         )
     }
 
+    /* Maintain reference to avoid auto garbage collecting */
+    lateinit var logWriter: LogWriter
+
     private fun configureLogging(epConfig: EpConfig) {
         val logCfg = epConfig.logConfig
-        logCfg.writer = object : LogWriter() {
-            override fun write(entry: LogEntry?) {
-                println(entry?.msg)
+        this.logWriter = object : LogWriter() {
+            override fun write(entry: LogEntry) {
+                println(entry.msg)
             }
         }
-        logCfg.decor = logCfg.decor and
+        logCfg.writer = this.logWriter
+            logCfg.decor = logCfg.decor and
                 (pj_log_decoration.PJ_LOG_HAS_CR or
                         pj_log_decoration.PJ_LOG_HAS_NEWLINE).inv().toLong()
     }

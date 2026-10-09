@@ -1,8 +1,6 @@
 package com.samsung.sip
 
 import android.net.Uri
-import android.os.Handler
-import android.os.Looper
 import android.telecom.Connection
 import android.telecom.DisconnectCause
 import android.telecom.TelecomManager.PRESENTATION_ALLOWED

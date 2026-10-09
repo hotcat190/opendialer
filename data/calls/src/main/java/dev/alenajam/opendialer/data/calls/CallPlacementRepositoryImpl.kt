@@ -26,7 +26,7 @@ class CallPlacementRepositoryImpl @Inject constructor(
     override fun placeCall(number: String, account: CallAccount?): CallPlacementResult {
         // TODO: change app to allow user to select which method (tel/sip) to place new calls
         if (number == "1000") {
-            return place(Uri.fromParts(PhoneAccount.SCHEME_SIP, number, null), account)
+            return place(Uri.fromParts(PhoneAccount.SCHEME_SIP, "$number@107.98.46.135", null), account)
         }
         if (number == "1001") {
             val telecomManager = context.getSystemService(TelecomManager::class.java)
@@ -34,7 +34,7 @@ class CallPlacementRepositoryImpl @Inject constructor(
             val extras = Bundle().apply {
                 putParcelable(
                     TelecomManager.EXTRA_INCOMING_CALL_ADDRESS,
-                    "sip:1001".toUri()
+                    "sip:1001@107.98.46.135".toUri()
                 )
             }
             telecomManager.addNewIncomingCall(account, extras)
@@ -60,8 +60,10 @@ class CallPlacementRepositoryImpl @Inject constructor(
 
         if (account != null) {
             Log.d("CallPlacementRepositoryImpl", "address ${address.toString()}")
-            Log.d("CallPlacementRepositoryImpl", "uri ${address.scheme}")
+            Log.d("CallPlacementRepositoryImpl", "scheme ${address.scheme}")
             Log.d("CallPlacementRepositoryImpl", "account $account")
+            Log.d("CallPlacementRepositoryImpl", "account.componentName ${account.componentName}")
+            Log.d("CallPlacementRepositoryImpl", "account.extras() ${account.extras()}")
             telecomManager.placeCall(address, account.extras())
             return CallPlacementResult.Placed
         }

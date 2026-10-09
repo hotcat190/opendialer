@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import com.samsung.sip.SipForegroundService
 import dagger.hilt.android.AndroidEntryPoint
 import dev.alenajam.opendialer.core.common.DefaultPhoneManager
 import dev.alenajam.opendialer.feature.appShell.DialerApp
@@ -37,6 +38,9 @@ class MainActivity : ComponentActivity() {
         )
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(intent)
+
+        stopService(Intent(this, SipForegroundService::class.java))
+        startForegroundService(Intent(this, SipForegroundService::class.java))
 
         setContent {
             DialerApp(defaultPhoneManager = defaultPhoneManager)

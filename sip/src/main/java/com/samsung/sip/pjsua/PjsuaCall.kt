@@ -10,9 +10,9 @@ import org.pjsip.pjsua2.pjsip_inv_state
 import org.pjsip.pjsua2.pjsua_call_media_status
 
 class PjsuaCall(
-    private val manager: PjsuaManager,
     account: Account,
-    callId: Int,
+    val callId: Int,
+    private val manager: PjsuaManager,
 ) : Call(account, callId) {
     companion object {
         private val TAG = PjsuaCall::class.simpleName
