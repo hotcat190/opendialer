@@ -150,6 +150,7 @@ class PjsuaManager @Inject constructor() {
 
     internal fun onIncomingCall(call: PjsuaCall) {
         registerCall(call)
+        endpoint.audDevManager().setNullDev()
         incomingCallListener?.onIncomingCall(call)
     }
 

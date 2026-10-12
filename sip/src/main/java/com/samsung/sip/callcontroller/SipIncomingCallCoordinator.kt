@@ -3,6 +3,7 @@ package com.samsung.sip.callcontroller
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import android.os.Parcelable
 import android.telecom.TelecomManager
 import android.telecom.TelecomManager.EXTRA_INCOMING_CALL_ADDRESS
 import android.util.Log
@@ -30,14 +31,21 @@ class SipIncomingCallCoordinator @Inject constructor(
         Log.d(TAG,"remoteContact=${call.info.remoteContact}")
         Log.d(TAG, "remoteUri.toUri()=${call.info.remoteUri.toUri()}")
         Log.d(TAG, "Uri.parse(remoteUri)=${Uri.parse(call.info.remoteUri)}")
+        val address = extractAddress(call.info.remoteUri)
+        Log.d(TAG, "address=${address}")
         val telecomManager = context.getSystemService(TelecomManager::class.java)
         val extras = Bundle().apply {
             putInt(STRING_KEY_PJSUA_CALL_ID, call.callId)
-            putParcelable(EXTRA_INCOMING_CALL_ADDRESS, call.info.remoteUri.toUri())
+            putParcelable(EXTRA_INCOMING_CALL_ADDRESS, address.toUri())
         }
         telecomManager.addNewIncomingCall(
             SipPhoneAccount.getHandle(context),
             extras
         )
+    }
+
+    private fun extractAddress(remoteUri: String): String {
+        val regex = Regex("<([^>]*)>")
+        return regex.find(remoteUri)?.groupValues?.get(1) ?: "Unknown"
     }
 }
