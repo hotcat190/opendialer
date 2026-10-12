@@ -21,7 +21,7 @@ class FakeSipCallController : SipCallController {
         this.listener = null
     }
 
-    override fun startOutgoingCall(destination: String) {
+    fun startOutgoingCall(destination: String) {
         disconnected = false
         listener?.onDialing()
         handler.postDelayed({

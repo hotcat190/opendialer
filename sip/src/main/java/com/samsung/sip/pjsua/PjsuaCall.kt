@@ -1,12 +1,14 @@
 package com.samsung.sip.pjsua
 
 import android.util.Log
+import com.samsung.sip.callcontroller.Pjsua2SipCallController
 import org.pjsip.pjsua2.Account
 import org.pjsip.pjsua2.Call
 import org.pjsip.pjsua2.OnCallMediaStateParam
 import org.pjsip.pjsua2.OnCallStateParam
 import org.pjsip.pjsua2.pjmedia_type
 import org.pjsip.pjsua2.pjsip_inv_state
+import org.pjsip.pjsua2.pjsip_role_e
 import org.pjsip.pjsua2.pjsua_call_media_status
 
 class PjsuaCall(
@@ -18,20 +20,11 @@ class PjsuaCall(
         private val TAG = PjsuaCall::class.simpleName
     }
 
+    val callController = Pjsua2SipCallController(this)
+
     interface Listener {
         fun onPjsuaStateChanged(state: Int)
     }
-
-    private var listener: Listener? = null
-
-    fun setListener(listener: Listener) {
-        this.listener = listener
-    }
-
-    fun clearListener() {
-        listener = null
-    }
-
 
     override fun onCallState(prm: OnCallStateParam?) {
         val ci = try {
@@ -47,7 +40,15 @@ class PjsuaCall(
             "${ci.state} ${ci.stateText}"
         )
 
-        listener?.onPjsuaStateChanged(ci.state)
+        if (ci.role == pjsip_role_e.PJSIP_ROLE_UAC &&
+            ci.state > pjsip_inv_state.PJSIP_INV_STATE_CALLING &&
+            ci.state < pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED
+        ) {
+            println("Skipping call state update as UAC")
+            return
+        }
+
+        callController.onPjsuaStateChanged(ci.state)
 
         if (ci.state == pjsip_inv_state.PJSIP_INV_STATE_DISCONNECTED) {
             manager.removeCall(this)
@@ -66,9 +67,8 @@ class PjsuaCall(
         for (i in cmiv.indices) {
             val cmi = cmiv[i]
             if (cmi.type == pjmedia_type.PJMEDIA_TYPE_AUDIO &&
-                (
-                        cmi.status == pjsua_call_media_status.PJSUA_CALL_MEDIA_ACTIVE ||
-                                cmi.status == pjsua_call_media_status.PJSUA_CALL_MEDIA_REMOTE_HOLD)
+                (cmi.status == pjsua_call_media_status.PJSUA_CALL_MEDIA_ACTIVE ||
+                    cmi.status == pjsua_call_media_status.PJSUA_CALL_MEDIA_REMOTE_HOLD)
             ) {
                 /* Connect ports */
                 try {

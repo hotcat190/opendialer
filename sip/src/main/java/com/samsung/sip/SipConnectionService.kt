@@ -36,13 +36,12 @@ class SipConnectionService : ConnectionService() {
         }
         Log.d(TAG, "phoneAccount ${connectionManagerPhoneAccount}")
         Log.d(TAG, "request.address ${request.address}")
-        val controller = Pjsua2SipCallController(pjsuaManager)
+        val call = pjsuaManager.makeCall("${request.address.scheme}:${request.address.schemeSpecificPart}")
+        val callController = call.callController
         val sipConnection = SipConnection(
-            controller,
+            callController,
             request.address
         )
-        sipConnection.connectionCapabilities = Connection.CAPABILITY_SUPPORT_HOLD or Connection.CAPABILITY_MUTE
-        controller.startOutgoingCall("${request.address.scheme}:${request.address.schemeSpecificPart}")
         return sipConnection
     }
 
@@ -66,10 +65,9 @@ class SipConnectionService : ConnectionService() {
             ?: return Connection.createFailedConnection(
                 DisconnectCause(DisconnectCause.ERROR))
 
-        val controller = Pjsua2SipCallController(pjsuaManager)
-        controller.setCall(pjsuaCall)
+        val callController = pjsuaCall.callController
         val sipConnection = SipConnection(
-            controller,
+            callController,
             request.address
         )
         return sipConnection
