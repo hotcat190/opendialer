@@ -5,6 +5,7 @@ import com.samsung.sip.pjsua.PjsuaCall
 import org.pjsip.pjsua2.CallOpParam
 import org.pjsip.pjsua2.pjsip_inv_state
 import org.pjsip.pjsua2.pjsip_status_code
+import org.pjsip.pjsua2.pjsua_call_flag
 
 class Pjsua2SipCallController (
     private var call: PjsuaCall
@@ -61,9 +62,13 @@ class Pjsua2SipCallController (
 
     override fun hold() {
         call?.setHold(CallOpParam(true))
+        listener?.onHolding()
     }
 
     override fun resume() {
-        call?.reinvite(CallOpParam(true))
+        call?.reinvite(CallOpParam(true).apply {
+            opt.flag = pjsua_call_flag.PJSUA_CALL_UNHOLD.toLong()
+        })
+        listener?.onActive()
     }
 }

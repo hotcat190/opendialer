@@ -36,7 +36,7 @@ class PjsuaCall(
         }
 
         println(
-            "PJSUA2 call state: " +
+            "PjsuaCall.onCallState(); PJSUA2 call state: " +
             "${ci.state} ${ci.stateText}"
         )
 
@@ -63,6 +63,12 @@ class PjsuaCall(
             e.printStackTrace()
             return
         }
+
+        println(
+            "PjsuaCall.onCallMediaState() PJSUA2 call state: " +
+            "${ci.state} ${ci.stateText}"
+        )
+
         val cmiv = ci.media
         for (i in cmiv.indices) {
             val cmi = cmiv[i]
