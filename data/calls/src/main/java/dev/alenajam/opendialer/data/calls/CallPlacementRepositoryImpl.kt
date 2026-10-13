@@ -24,23 +24,7 @@ class CallPlacementRepositoryImpl @Inject constructor(
 ) : CallPlacementRepository {
     @SuppressLint("MissingPermission")
     override fun placeCall(number: String, account: CallAccount?): CallPlacementResult {
-        // TODO: change app to allow user to select which method (tel/sip) to place new calls
-        if (number == "1000") {
-            return place(Uri.fromParts(PhoneAccount.SCHEME_SIP, "$number@107.98.46.135", null), account)
-        }
-        if (number == "1001") {
-            val telecomManager = context.getSystemService(TelecomManager::class.java)
-            val account = telecomManager.getDefaultOutgoingPhoneAccount(PhoneAccount.SCHEME_SIP)
-            val extras = Bundle().apply {
-                putParcelable(
-                    TelecomManager.EXTRA_INCOMING_CALL_ADDRESS,
-                    "sip:1001@107.98.46.135".toUri()
-                )
-            }
-            telecomManager.addNewIncomingCall(account, extras)
-            return CallPlacementResult.Placed
-        }
-        return place(Uri.fromParts(PhoneAccount.SCHEME_TEL, number, null), account)
+        return place(Uri.fromParts(PhoneAccount.SCHEME_SIP, "${number}@107.98.46.135", null), account)
     }
 
     @SuppressLint("MissingPermission")
