@@ -11,6 +11,8 @@ import org.pjsip.pjsua2.Endpoint
 import org.pjsip.pjsua2.EpConfig
 import org.pjsip.pjsua2.LogEntry
 import org.pjsip.pjsua2.LogWriter
+import org.pjsip.pjsua2.SrtpCrypto
+import org.pjsip.pjsua2.SrtpCryptoVector
 import org.pjsip.pjsua2.TransportConfig
 import org.pjsip.pjsua2.pj_log_decoration
 import org.pjsip.pjsua2.pjmedia_srtp_use
@@ -29,14 +31,8 @@ class PjsuaManager @Inject constructor() {
         const val ACC_REGISTRAR = "sip:${ACC_DOMAIN}"
         const val ACC_PROXY  = "sip:${ACC_DOMAIN};lr"
 
-        // Peer to call
-        const val CALL_DST_URI  = "MicroSIP <sip:1000@${ACC_DOMAIN}>"
-
         // SIP transport listening port
         const val SIP_LISTENING_PORT: Long = 6000
-
-        /* Constants */
-        const val MSG_UPDATE_CALL_INFO      = 1
     }
 
     private val endpoint = Endpoint()
@@ -171,6 +167,17 @@ class PjsuaManager @Inject constructor() {
 
         accConfig.mediaConfig.srtpUse = pjmedia_srtp_use.PJMEDIA_SRTP_DISABLED
         accConfig.mediaConfig.srtpSecureSignaling = 0
+
+        println("Available crypto suites:")
+        endpoint.srtpCryptoEnum().forEach { println(it) }
+        accConfig.mediaConfig.srtpOpt.cryptos = SrtpCryptoVector(
+            endpoint.srtpCryptoEnum()
+            .filter { it.startsWith("AES_CM_128") }
+            .map { SrtpCrypto().apply { name = it } }
+        )
+
+        println("Chosen crypto suites:")
+        accConfig.mediaConfig.srtpOpt.cryptos.forEach { println(it.name) }
 
         account.create(accConfig)
     }
