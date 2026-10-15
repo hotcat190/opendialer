@@ -29,19 +29,13 @@ class PjsuaManager @Inject constructor(
 ) {
     companion object {
         private val TAG = PjsuaManager::class.simpleName
-        //const val SIP_LISTENING_PORT: Long = 6000
     }
 
-    init {
-
-    }
     private val endpoint = Endpoint()
     private var account: PjsuaAccount = PjsuaAccount(this)
     private val calls = mutableMapOf<Int, PjsuaCall>()
 
     private var isRunning: Boolean = false
-
-
 
     fun initialize() {
         Log.d(TAG, "$TAG initialize()")
@@ -49,31 +43,33 @@ class PjsuaManager @Inject constructor(
             Log.d(TAG, "This $TAG instance is already initialized, returning early")
             return
         }
+        try {
+            /* Endpoint config */
+            val epConfig = EpConfig()
 
-        /* Endpoint config */
-        val epConfig = EpConfig()
+            /* Setup our log writer */
+            configureLogging(epConfig)
 
-        /* Setup our log writer */
-        configureLogging(epConfig)
+            endpoint.libCreate()
+            endpoint.libInit(epConfig)
 
-        endpoint.libCreate()
-        endpoint.libInit(epConfig)
+            /* Setup transport */
+            createTransports()
 
-        /* Setup transport */
-        createTransports()
+            /* Setup account */
+            createAccount()
 
-        /* Setup account */
-        createAccount()
+            /* Lib start */
+            endpoint.libStart()
 
-        /* Lib start */
-        endpoint.libStart()
+            /* Prioritize PCMA for compatibility with demo's FreeSwitch & MicroSIP SDP negotiation */
+            endpoint.codecSetPriority("PCMA/8000", 255)
 
-        /* Prioritize PCMA for compatibility with demo's FreeSwitch & MicroSIP SDP negotiation */
-        endpoint.codecSetPriority("PCMA/8000", 255)
-
-        isRunning = true
+            isRunning = true
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
-
 
     fun shutdown() {
         Log.d(TAG, "$TAG shutdown()")
@@ -85,7 +81,10 @@ class PjsuaManager @Inject constructor(
             endpoint.hangupAllCalls()
             account.shutdown()
             endpoint.libDestroy()
-        } finally {
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        finally {
             calls.clear()
             isRunning = false
         }
