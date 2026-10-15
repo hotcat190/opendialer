@@ -69,6 +69,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.compose.runtime.livedata)
     implementation(libs.coil.compose)
+    implementation(libs.androidx.security.crypto.ktx)
 }
 
 kotlin {

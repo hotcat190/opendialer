@@ -27,8 +27,10 @@ firebase-bom = "34.18.0"
 firebase-crashlytics-plugin = "3.0.8"
 google-services = "4.5.0"
 guava = "21.0"
+security-crypto-ktx = "1.1.0"
 
 [libraries]
+androidx-security-crypto-ktx = { module = "androidx.security:security-crypto-ktx", version.ref = "security-crypto-ktx" }
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
 hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }

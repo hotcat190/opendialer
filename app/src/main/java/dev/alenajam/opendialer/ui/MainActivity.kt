@@ -29,15 +29,15 @@ class MainActivity : ComponentActivity() {
         // Source - https://stackoverflow.com/a/49858933
         // Posted by TALE
         // Retrieved 2026-10-07, License - CC BY-SA 3.0
-        val intent = Intent()
-        intent.setComponent(
-            ComponentName(
-                "com.android.server.telecom",
-                "com.android.server.telecom.settings.EnableAccountPreferenceActivity"
-            )
-        )
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        startActivity(intent)
+//        val intent = Intent()
+//        intent.setComponent(
+//            ComponentName(
+//                "com.android.server.telecom",
+//                "com.android.server.telecom.settings.EnableAccountPreferenceActivity"
+//            )
+//        )
+//        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+//        startActivity(intent)
 
         stopService(Intent(this, SipForegroundService::class.java))
         startForegroundService(Intent(this, SipForegroundService::class.java))

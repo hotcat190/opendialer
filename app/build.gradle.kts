@@ -163,6 +163,8 @@ dependencies {
     implementation(libs.androidx.compose.ui.viewbinding)
     implementation(libs.navigation.compose)
     implementation(libs.kotlinx.serialization)
+    implementation(libs.androidx.security.crypto.ktx)
+
 }
 
 kotlin {

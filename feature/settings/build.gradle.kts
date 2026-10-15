@@ -1,3 +1,4 @@
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -35,7 +36,7 @@ android {
 
 dependencies {
     implementation(project(":core:common"))
-
+    implementation(project(":sip"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -80,6 +81,12 @@ dependencies {
     implementation(libs.compose.activity)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.kotlinx.serialization)
+
+    // Gradle dependency
+
+
+
+
 }
 
 kotlin {

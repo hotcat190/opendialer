@@ -1,7 +1,11 @@
 package com.samsung.sip.pjsua
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import com.samsung.sip.callcontroller.PjsuaIncomingCallListener
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dev.alenajam.opendialer.core.common.SharedPreferenceHelper
 import javax.inject.Inject
 import org.pjsip.pjsua2.AccountConfig
 import org.pjsip.pjsua2.AudioMedia
@@ -20,26 +24,24 @@ import org.pjsip.pjsua2.pjsip_transport_type_e
 import javax.inject.Singleton
 
 @Singleton
-class PjsuaManager @Inject constructor() {
+class PjsuaManager @Inject constructor(
+    @ApplicationContext private  var context: Context
+) {
     companion object {
         private val TAG = PjsuaManager::class.simpleName
-        // Account ID
-        const val ACC_DOMAIN = "107.98.46.135"
-        const val ACC_USER   = "1001"
-        const val ACC_PASSWD = "1234"
-        const val ACC_ID_URI = "Kotlin <sip:$ACC_USER@$ACC_DOMAIN>"
-        const val ACC_REGISTRAR = "sip:${ACC_DOMAIN}"
-        const val ACC_PROXY  = "sip:${ACC_DOMAIN};lr"
-
-        // SIP transport listening port
-        const val SIP_LISTENING_PORT: Long = 6000
+        //const val SIP_LISTENING_PORT: Long = 6000
     }
 
+    init {
+
+    }
     private val endpoint = Endpoint()
     private var account: PjsuaAccount = PjsuaAccount(this)
     private val calls = mutableMapOf<Int, PjsuaCall>()
 
     private var isRunning: Boolean = false
+
+
 
     fun initialize() {
         Log.d(TAG, "$TAG initialize()")
@@ -121,6 +123,10 @@ class PjsuaManager @Inject constructor() {
         audioMedia.startTransmit(endpoint.audDevManager().playbackDevMedia)
     }
 
+    fun reconnect() {
+        shutdown()
+        initialize()
+    }
     private fun registerCall(call: PjsuaCall) {
         try {
             calls[call.id] = call
@@ -151,6 +157,15 @@ class PjsuaManager @Inject constructor() {
     }
 
     private fun createAccount() {
+        val ACC_DOMAIN =  SharedPreferenceHelper.getSipDomain(context)
+        val ACC_USER =  SharedPreferenceHelper.getSipUser(context)
+
+        val ACC_PASSWD =  SharedPreferenceHelper.getSipPassword(context)
+
+        val ACC_ID_URI = "Kotlin <sip:$ACC_USER@${ACC_DOMAIN}>"
+        val ACC_REGISTRAR = "sip:${ACC_DOMAIN}"
+        val ACC_PROXY  = "sip:${ACC_DOMAIN};lr"
+
         val accConfig = AccountConfig()
         accConfig.idUri = ACC_ID_URI
         accConfig.regConfig.registrarUri = ACC_REGISTRAR
@@ -183,6 +198,7 @@ class PjsuaManager @Inject constructor() {
     }
 
     private fun createTransports() {
+        val SIP_LISTENING_PORT: Long = SharedPreferenceHelper.getSipPort(context)?.toLongOrNull() ?: 0L
         val udpConfig = TransportConfig()
         udpConfig.port = SIP_LISTENING_PORT
         endpoint.transportCreate(

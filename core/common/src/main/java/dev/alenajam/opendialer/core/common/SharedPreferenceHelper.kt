@@ -1,10 +1,15 @@
 package dev.alenajam.opendialer.core.common
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.edit
 import androidx.preference.PreferenceManager
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
+
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -24,6 +29,53 @@ object SharedPreferenceHelper {
     private const val KEY_AVAILABLE_UPDATE_VERSION = "available_update_version"
     private const val KEY_AVAILABLE_UPDATE_URL = "available_update_url"
 
+    const val SIP_PASSWORD = "sip_password"
+    const val SIP_ACC_DOMAIN = "sip_acc_domain"
+    const val SIP_ACC_USER = "sip_acc_user"
+
+    const val SIP_LISTENING_PORT = "sip_listening_port"
+
+    fun setSipPort(context: Context, port : String){
+        getSecurePrefs(context).edit{
+            putString(SIP_LISTENING_PORT, port)
+        }
+    }
+
+    fun getSipPort(context: Context): String? {
+        return getSecurePrefs(context).getString(SIP_LISTENING_PORT, "")
+    }
+
+    fun setSipDomain(context: Context, domain : String){
+        getSecurePrefs(context).edit{
+            putString(SIP_ACC_DOMAIN, domain)
+        }
+    }
+
+    fun getSipDomain(context: Context): String? {
+        return getSecurePrefs(context).getString(SIP_ACC_DOMAIN, "")
+    }
+
+    fun setSipUser(context: Context, user : String){
+        getSecurePrefs(context).edit{
+            putString(SIP_ACC_USER, user)
+        }
+    }
+
+    fun getSipUser(context: Context): String?{
+        return getSecurePrefs(context).getString(SIP_ACC_USER, "")
+    }
+
+    fun setSipPassword(context: Context, password: String) {
+        getSecurePrefs(context).edit {
+            putString(SIP_PASSWORD, password)
+        }
+    }
+
+    fun getSipPassword(context: Context): String? {
+        return getSecurePrefs(context).getString(SIP_PASSWORD, "")
+    }
+    @Volatile
+    private var securePrefs: SharedPreferences ? = null
     enum class ThemeMode(val nightMode: Int) {
         LIGHT(AppCompatDelegate.MODE_NIGHT_NO),
         DARK(AppCompatDelegate.MODE_NIGHT_YES),
@@ -33,6 +85,26 @@ object SharedPreferenceHelper {
             fun from(nightMode: Int) = entries.firstOrNull { it.nightMode == nightMode } ?: SYSTEM
         }
     }
+
+    private fun getSecurePrefs(context: Context): SharedPreferences {
+        return securePrefs ?: synchronized(this) {
+            val masterKey = MasterKey.Builder(context)
+                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                .build()
+
+            securePrefs = EncryptedSharedPreferences.create(
+                context,
+                "secure_sip_prefs", // file name
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+            securePrefs!!
+        }
+    }
+
+
+
 
     @JvmStatic
     fun getSharedPreferences(context: Context): SharedPreferences {

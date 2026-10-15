@@ -15,19 +15,23 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,8 +39,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.alenajam.opendialer.core.common.copy
 import dev.alenajam.opendialer.core.common.SharedPreferenceHelper
 import dev.alenajam.opendialer.core.common.ui.AppIcon
@@ -45,7 +54,14 @@ import dev.alenajam.opendialer.core.common.ui.LocalAppIcons
 private data class SettingsListItem(
     val title: String,
     val description: String?,
-    val onClick: () -> Unit
+    val onClick: () -> Unit,
+
+)
+
+data class ConfigurationItem(
+    val title : String,
+    val value : String,
+    val onValueChange: (String) -> Unit
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,7 +71,8 @@ fun SettingsScreen(
     onOpenQuickResponses: () -> Unit = {},
     onOpenDisplayOptions: () -> Unit = {},
     subpages: List<SettingsSubpage> = emptyList(),
-    onOpenSubpage: (String, String?) -> Unit = { _, _ -> }
+    onOpenSubpage: (String, String?) -> Unit = { _, _ -> },
+    viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     var updateChecksEnabled by remember {
@@ -70,6 +87,46 @@ fun SettingsScreen(
     val manageBlockedNumbersTitle = stringResource(R.string.manageBlockedNumbers)
     val manageBlockedNumbersDescription = stringResource(R.string.manage_blocked_numbers_description)
     val extensionTitle = appName
+
+
+    val settingItems = buildList {
+        add(
+            ConfigurationItem(
+                title = "Domain",
+                value = viewModel.domain.collectAsState().value,
+                onValueChange = {
+                    newDomain -> viewModel.updateDomain(newDomain)
+                }
+            )
+        )
+        add(
+            ConfigurationItem(
+                title = "User",
+                value = viewModel.user.collectAsState().value,
+                onValueChange = {
+                        newUser -> viewModel.updateUser(newUser)
+                }
+            )
+        )
+        add(
+            ConfigurationItem(
+                title = "Password",
+                value = viewModel.password.collectAsState().value,
+                onValueChange = {
+                    newPassword -> viewModel.updatePassword(newPassword)
+                }
+            )
+        )
+        add(
+            ConfigurationItem(
+                title = "Listening Port",
+                value = viewModel.port.collectAsState().value,
+                onValueChange = {
+                        newPort -> viewModel.updatePort(newPort)
+                }
+            )
+        )
+    }
     val dialerItems = buildList {
         add(
             SettingsListItem(
@@ -127,23 +184,32 @@ fun SettingsScreen(
     ) { innerPadding ->
         Column(
             modifier = Modifier
-                .padding(innerPadding.copy(top = innerPadding.calculateTopPadding() + 16.dp, start = 16.dp, end = 16.dp))
+                .padding(
+                    innerPadding.copy(
+                        top = innerPadding.calculateTopPadding() + 16.dp,
+                        start = 16.dp,
+                        end = 16.dp
+                    )
+                )
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.Top
         ) {
+            ConfigurationSection(onNavigateBack = onNavigateBack, items = settingItems, viewModel)
+
+            Spacer(Modifier.height(12.dp))
             SettingsSection(
                 title = stringResource(R.string.dialer),
                 items = dialerItems
             )
-            Spacer(Modifier.height(12.dp))
-            UpdateChecksSection(
-                enabled = updateChecksEnabled,
-                onEnabledChange = { enabled ->
-                    updateChecksEnabled = enabled
-                    SharedPreferenceHelper.setUpdateCheckEnabled(context, enabled)
-                },
-            )
+//            UpdateChecksSection(
+//                enabled = updateChecksEnabled,
+//                onEnabledChange = { enabled ->
+//                    updateChecksEnabled = enabled
+//                    SharedPreferenceHelper.setUpdateCheckEnabled(context, enabled)
+//                },
+//            )
+
             if (extensionItems.isNotEmpty()) {
                 Spacer(Modifier.height(12.dp))
                 SettingsSection(title = extensionTitle, items = extensionItems)
@@ -203,7 +269,34 @@ private fun SettingsSection(title: String, items: List<SettingsListItem>) {
         )
     }
 }
+@Composable
+fun ConfigurationSection(onNavigateBack: () -> Unit, items: List<ConfigurationItem>, viewModel: SettingsViewModel ){
 
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text("Account Configuration", style = MaterialTheme.typography.titleMedium)
+        items.forEachIndexed { index, item ->
+            OutlinedTextField(
+                value = item.value,
+                onValueChange = { item.onValueChange(it)},
+                label = { Text(item.title) },
+                //visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+
+        }
+
+        Button(
+            onClick = {
+                viewModel.saveAll()
+                onNavigateBack()
+            }
+        ) {
+            Text("Save & Connect")
+        }
+    }
+}
 @Composable
 private fun SettingsCard(
     title: String,
@@ -212,7 +305,9 @@ private fun SettingsCard(
     shape: RoundedCornerShape = RoundedCornerShape(20.dp)
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 1.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 1.dp),
         onClick = onClick,
         shape = shape,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
@@ -224,3 +319,6 @@ private fun SettingsCard(
         }
     }
 }
+
+
+
