@@ -85,8 +85,8 @@ internal fun InCallScreen(
             Box(modifier = Modifier.fillMaxSize()) {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     InCallDetails(
-                        callerName = uiState.callerName,
-                        callerNumber = uiState.callerNumber,
+                        callerName = uiState.callerName.substringBefore("@"),
+                        callerNumber = uiState.callerNumber.substringBefore("@"),
                         callerNumberLabel = uiState.callerNumberLabel,
                         status = uiState.status,
                         durationMillis = durationMillis,

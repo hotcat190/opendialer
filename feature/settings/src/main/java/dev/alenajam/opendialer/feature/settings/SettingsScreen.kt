@@ -5,6 +5,9 @@ import android.content.Context
 import android.provider.BlockedNumberContract
 import android.telecom.TelecomManager
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,22 +16,28 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -40,9 +49,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -51,7 +62,7 @@ import dev.alenajam.opendialer.core.common.SharedPreferenceHelper
 import dev.alenajam.opendialer.core.common.ui.AppIcon
 import dev.alenajam.opendialer.core.common.ui.LocalAppIcons
 
-private data class SettingsListItem(
+data class SettingsListItem(
     val title: String,
     val description: String?,
     val onClick: () -> Unit,
@@ -218,6 +229,163 @@ fun SettingsScreen(
     }
 }
 
+
+
+@Composable
+ fun SettingsSection(title: String, items: List<SettingsListItem>) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleMedium,
+        modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
+    )
+    items.forEachIndexed { index, item ->
+        SettingsCard(
+            title = item.title,
+            description = item.description,
+            onClick = item.onClick,
+            shape = RoundedCornerShape(
+                topStart = if (index == 0) 20.dp else 2.dp,
+                topEnd = if (index == 0) 20.dp else 2.dp,
+                bottomStart = if (index == items.lastIndex) 20.dp else 2.dp,
+                bottomEnd = if (index == items.lastIndex) 20.dp else 2.dp
+            )
+        )
+    }
+}
+@Composable
+fun ConfigurationSection(onNavigateBack: () -> Unit, items: List<ConfigurationItem>, viewModel: SettingsViewModel ){
+
+
+    Column() {
+        Text("Account Configuration",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp))
+        Card(modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp)) {
+            Column {
+                items.forEachIndexed { index, item ->
+                   ConfigurationRow(item)
+                    if(index < items.lastIndex){
+                        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                    }
+                }
+                Row(
+                    Modifier.fillMaxWidth().
+                    padding(16.dp),
+                    horizontalArrangement = Arrangement.End){
+                    Button(
+                        onClick = {
+                            viewModel.saveAll()
+                            onNavigateBack()
+                        }
+                    ) {
+                        Text("Save & Connect")
+                    }
+                }
+
+            }
+        }
+
+    }
+}
+
+@Composable
+fun ConfigurationRow(item: ConfigurationItem){
+    var showDialog by remember { mutableStateOf(false) }
+    val isPassword = item.title.equals("Password", ignoreCase = true)
+
+    ListItem(
+        headlineContent = {Text (item.title)},
+        supportingContent = {
+            val displayValue = if (item.value.isEmpty()){
+                "Tap to set ${item.title.lowercase()}"
+            } else if (isPassword){
+                ".".repeat(8)
+            }
+            else{
+                item.value
+            }
+            Text(displayValue)
+        },
+        modifier = Modifier.clickable{
+            showDialog = true
+        },
+        colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent)
+
+
+    )
+    if(showDialog){
+        var tempValue by remember { mutableStateOf(item.value) }
+
+        AlertDialog(
+            onDismissRequest = {
+                showDialog = false
+            },
+            title = {
+                Text("Enter ${item.title}")
+            },
+            text = {
+                OutlinedTextField(
+                    value = tempValue,
+                    onValueChange = {
+                        tempValue = it
+                    },
+                    label = {
+                        Text(item.title)
+                    },
+                    visualTransformation = if(isPassword) PasswordVisualTransformation() else VisualTransformation.None,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = if (isPassword) KeyboardType.Password
+                                        else if(item.title.contains("Port")) KeyboardType.Number
+                        else KeyboardType.Text
+                    ),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+              TextButton(onClick = {
+                  item.onValueChange(tempValue)
+                  showDialog = false
+              }) {
+                  Text("OK")
+              }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showDialog = false
+                }) {
+                    Text("Cancel")
+                }
+            }
+
+        )
+    }
+}
+@Composable
+private fun SettingsCard(
+    title: String,
+    description: String?,
+    onClick: () -> Unit,
+    shape: RoundedCornerShape = RoundedCornerShape(20.dp)
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 1.dp),
+        onClick = onClick,
+        shape = shape,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(title, style = MaterialTheme.typography.titleMedium)
+            description?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+        }
+    }
+}
 @Composable
 private fun UpdateChecksSection(enabled: Boolean, onEnabledChange: (Boolean) -> Unit) {
     Text(
@@ -244,78 +412,6 @@ private fun UpdateChecksSection(enabled: Boolean, onEnabledChange: (Boolean) -> 
                 )
             }
             Switch(checked = enabled, onCheckedChange = onEnabledChange)
-        }
-    }
-}
-
-@Composable
-private fun SettingsSection(title: String, items: List<SettingsListItem>) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleMedium,
-        modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
-    )
-    items.forEachIndexed { index, item ->
-        SettingsCard(
-            title = item.title,
-            description = item.description,
-            onClick = item.onClick,
-            shape = RoundedCornerShape(
-                topStart = if (index == 0) 20.dp else 2.dp,
-                topEnd = if (index == 0) 20.dp else 2.dp,
-                bottomStart = if (index == items.lastIndex) 20.dp else 2.dp,
-                bottomEnd = if (index == items.lastIndex) 20.dp else 2.dp
-            )
-        )
-    }
-}
-@Composable
-fun ConfigurationSection(onNavigateBack: () -> Unit, items: List<ConfigurationItem>, viewModel: SettingsViewModel ){
-
-
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text("Account Configuration", style = MaterialTheme.typography.titleMedium)
-        items.forEachIndexed { index, item ->
-            OutlinedTextField(
-                value = item.value,
-                onValueChange = { item.onValueChange(it)},
-                label = { Text(item.title) },
-                //visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-
-        }
-
-        Button(
-            onClick = {
-                viewModel.saveAll()
-                onNavigateBack()
-            }
-        ) {
-            Text("Save & Connect")
-        }
-    }
-}
-@Composable
-private fun SettingsCard(
-    title: String,
-    description: String?,
-    onClick: () -> Unit,
-    shape: RoundedCornerShape = RoundedCornerShape(20.dp)
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 1.dp),
-        onClick = onClick,
-        shape = shape,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(title, style = MaterialTheme.typography.titleMedium)
-            description?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
         }
     }
 }

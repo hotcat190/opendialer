@@ -545,9 +545,10 @@ private fun CallRow(
             }
             .orEmpty()
     }
-    val displayNumber = call.contactInfo.formattedNumber
+    val rawNumber = call.contactInfo.formattedNumber
         ?.takeIf { it.isNotBlank() }
         ?: call.contactInfo.number.orEmpty()
+    val displayNumber = rawNumber.substringBefore("@")
     val title = if (call.isVoicemailNumber) stringResource(R.string.filter_voicemail)
     else if (call.isAnonymous()) stringResource(id = R.string.anonymous)
     else call.contactInfo.name?.takeIf { it.isNotBlank() } ?: displayNumber
