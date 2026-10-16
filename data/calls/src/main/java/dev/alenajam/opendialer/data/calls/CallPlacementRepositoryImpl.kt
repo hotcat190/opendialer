@@ -17,6 +17,7 @@ import dev.alenajam.opendialer.core.common.telecom.CallPlacementResult
 import javax.inject.Inject
 import javax.inject.Singleton
 import androidx.core.net.toUri
+import dev.alenajam.opendialer.core.common.CommonUtils
 import dev.alenajam.opendialer.core.common.SharedPreferenceHelper
 
 @Singleton
@@ -25,8 +26,20 @@ class CallPlacementRepositoryImpl @Inject constructor(
 ) : CallPlacementRepository {
     @SuppressLint("MissingPermission")
     override fun placeCall(number: String, account: CallAccount?): CallPlacementResult {
-        val SIP_DOMAIN = SharedPreferenceHelper.getSipDomain(context)
-        return place(Uri.fromParts(PhoneAccount.SCHEME_SIP, "${number}@${SIP_DOMAIN}", null), account)
+        if (CommonUtils.isValidSipAddressPart(number)) {
+            return place(
+                Uri.fromParts(PhoneAccount.SCHEME_SIP, number, null),
+                account
+            )
+        } else if (CommonUtils.isValidSipUserPart(number)) {
+            val SIP_DOMAIN = SharedPreferenceHelper.getSipDomain(context)
+            return place(
+                Uri.fromParts(PhoneAccount.SCHEME_SIP, "${number}@${SIP_DOMAIN}", null),
+                account
+            )
+        } else {
+            return CallPlacementResult.InvalidUri
+        }
     }
 
     @SuppressLint("MissingPermission")

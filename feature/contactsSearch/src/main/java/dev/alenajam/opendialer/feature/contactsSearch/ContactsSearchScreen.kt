@@ -117,6 +117,7 @@ fun ContactsSearchScreen(
                 false
             }
             CallPlacementResult.Unavailable -> false
+            CallPlacementResult.InvalidUri -> false
         }
     }
 

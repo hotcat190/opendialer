@@ -24,8 +24,45 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import java.util.concurrent.TimeUnit
+import java.util.regex.Pattern
 
 object CommonUtils {
+
+    @JvmStatic
+    fun isValidSipUserPart(input: String): Boolean {
+        val userPart = "[A-Za-z0-9\\-_.!~*'()%]+"
+        val regex = "^$userPart"
+        val pattern = Pattern.compile(regex)
+        return pattern.matcher(input).matches()
+    }
+
+    @JvmStatic
+    fun isValidSipAddressPart(input: String): Boolean {
+        // RFC 3261 user part: unreserved, pct-encoded, or allowed symbols
+        val userPart = "[A-Za-z0-9\\-_.!~*'()%]+"
+
+        // Domain name: labels separated by dots, each 1-63 chars, total <= 253
+        val domainLabel = "[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?"
+        val domainName = "(?:$domainLabel\\.)+$domainLabel"
+
+        // IPv4: four octets 0-255
+        val ipv4 = "(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]{1,2})(?:\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]{1,2})){3}"
+
+        // IPv6: inside brackets, hex groups separated by colons (simplified RFC 4291)
+        val ipv6 = "\\[[0-9A-Fa-f:]+\\]"
+
+        // Special case: localhost
+        val localhost = "localhost"
+
+        // Host can be domain, IPv4, IPv6, or localhost
+        val hostPart = "(?:$domainName|$ipv4|$ipv6|$localhost)"
+
+        // Full regex: user@host
+        val regex = "^$userPart@$hostPart$"
+
+        val pattern = Pattern.compile(regex)
+        return pattern.matcher(input).matches()
+    }
 
     @JvmStatic
     @SuppressLint("DefaultLocale")

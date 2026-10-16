@@ -13,6 +13,7 @@ sealed interface CallPlacementResult {
     data object Placed : CallPlacementResult
     data object PermissionRequired : CallPlacementResult
     data object Unavailable : CallPlacementResult
+    data object InvalidUri : CallPlacementResult
     data class AccountSelectionRequired(val accounts: List<CallAccount>) : CallPlacementResult
 }
 

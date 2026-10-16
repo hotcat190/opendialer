@@ -68,6 +68,7 @@ class PjsuaManager @Inject constructor(
             isRunning = true
         } catch (e: Exception) {
             e.printStackTrace()
+            shutdown()
         }
     }
 
