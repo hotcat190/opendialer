@@ -68,6 +68,6 @@ class FakeSipCallController : SipCallController {
         }
         disconnected = true
         handler.removeCallbacksAndMessages(null)
-        listener?.onDisconnected(DisconnectCause.LOCAL)
+        listener?.onDisconnected(DisconnectCause(DisconnectCause.LOCAL))
     }
 }

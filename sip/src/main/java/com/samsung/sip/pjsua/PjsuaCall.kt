@@ -23,7 +23,7 @@ class PjsuaCall(
     val callController = Pjsua2SipCallController(this)
 
     interface Listener {
-        fun onPjsuaStateChanged(state: Int)
+        fun onPjsuaStateChanged(state: Int, statusCode: Int)
     }
 
     override fun onCallState(prm: OnCallStateParam?) {
@@ -48,7 +48,7 @@ class PjsuaCall(
             return
         }
 
-        callController.onPjsuaStateChanged(ci.state)
+        callController.onPjsuaStateChanged(ci.state, ci.lastStatusCode)
 
         if (ci.state == pjsip_inv_state.PJSIP_INV_STATE_DISCONNECTED) {
             manager.removeCall(this)

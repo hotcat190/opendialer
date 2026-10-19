@@ -1,5 +1,6 @@
 package dev.alenajam.opendialer.feature.inCall.ui
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -33,6 +34,7 @@ fun InCallDetails(
     showCallerImage: Boolean = true,
     useCompactCallerText: Boolean = false,
 ) {
+    Log.d("InCallDetails", "call status: $status")
     val icons = LocalAppIcons.current
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,

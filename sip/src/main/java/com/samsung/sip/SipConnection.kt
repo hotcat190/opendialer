@@ -26,26 +26,31 @@ class SipConnection(
     }
 
     override fun onAnswer() {
+        super<Connection>.onAnswer()
         Log.d(TAG, "SipConnection onAnswer")
         callController.answer()
     }
 
     override fun onDisconnect() {
+        super.onDisconnect()
         Log.d(TAG, "SipConnection onDisconnect")
         callController.hangup()
     }
 
     override fun onHold() {
+        super.onHold()
         Log.d(TAG, "SipConnection onHold")
         callController.hold()
     }
 
     override fun onReject() {
+        super<Connection>.onReject()
         Log.d(TAG, "SipConnection onReject")
         callController.reject()
     }
 
     override fun onUnhold() {
+        super.onUnhold()
         Log.d(TAG, "SipConnection onUnhold")
         callController.resume()
     }
@@ -70,9 +75,12 @@ class SipConnection(
         setOnHold()
     }
 
-    override fun onDisconnected(cause: Int) {
-        setDisconnected(DisconnectCause(cause))
+    override fun onDisconnected(cause: DisconnectCause) {
+        Log.d("SipConnection", "onDisconnected, cause: ${cause.code} ${cause.label} ${cause.description} ${cause.reason}")
+
+        setDisconnected(cause)
         callController.clearListener()
+
         destroy()
     }
 }

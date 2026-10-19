@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Build
 import android.telecom.Call
 import android.telecom.CallAudioState
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -89,12 +90,14 @@ class InCallViewModel @Inject constructor(
                             val differenceTime = CommonUtils.getCurrentTime() - primary.startTime + primary.totalTime
                             emit(differenceTime)
                         } else {
+                            Log.d("InCallViewModel", "primary != Call.STATE_ACTIVE: true")
                             emit(0L)
                         }
                         delay(1000)
                     }
                 }
             } else {
+                Log.d("InCallViewModel", "primary == null: true")
                 flowOf(0L)
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)

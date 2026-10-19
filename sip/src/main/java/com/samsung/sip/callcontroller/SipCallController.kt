@@ -1,5 +1,7 @@
 package com.samsung.sip.callcontroller
 
+import android.telecom.DisconnectCause
+
 interface SipCallController {
     fun setListener(listener: Listener)
     fun clearListener()
@@ -14,6 +16,6 @@ interface SipCallController {
         fun onRinging()
         fun onActive()
         fun onHolding()
-        fun onDisconnected(cause: Int)
+        fun onDisconnected(cause: DisconnectCause)
     }
 }

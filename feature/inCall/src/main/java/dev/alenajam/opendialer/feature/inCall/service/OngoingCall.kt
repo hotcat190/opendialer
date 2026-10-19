@@ -4,6 +4,7 @@ import android.content.Context
 import android.provider.ContactsContract
 import android.telecom.Call
 import android.telecom.VideoProfile
+import android.util.Log
 import dev.alenajam.opendialer.core.common.CommonUtils
 import dev.alenajam.opendialer.core.common.Contact
 import dev.alenajam.opendialer.feature.inCall.R
@@ -43,6 +44,7 @@ class OngoingCall(
     private val callback = object : Call.Callback() {
         override fun onStateChanged(call: Call, newState: Int) {
             super.onStateChanged(call, newState)
+            Log.d("OngoingCall", "newState: $newState")
             updateCallState(newState)
         }
 
