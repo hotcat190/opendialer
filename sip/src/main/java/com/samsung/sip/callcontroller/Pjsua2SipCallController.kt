@@ -26,7 +26,7 @@ class Pjsua2SipCallController (
             pjsip_inv_state.PJSIP_INV_STATE_CALLING -> listener?.onDialing()
             pjsip_inv_state.PJSIP_INV_STATE_INCOMING -> {
                 call?.answer(CallOpParam().apply {
-                    statusCode = pjsip_status_code.PJSIP_SC_PROGRESS
+                    statusCode = pjsip_status_code.PJSIP_SC_RINGING
                 })
                 listener?.onRinging()
             }

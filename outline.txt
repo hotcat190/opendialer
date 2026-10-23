@@ -1,0 +1,48 @@
+table of contents
+learn about SIP, circuit switch
+
+
+outline:
+
+VoLTE fundamentals
+- what is used pior to VoLTE (legacy network)
+- what is LTE, VoLTE?
+- How it works
+- why is LTE needed and key benefits
+Requirements to enable VoLTE
+Key Architecure
+- Control Plane & User Plane
+- Explain all components: IMS, CSCFs, PCR, TAS, SRVCC, MGW,..
+
+
+add unit 6
+finalise slides
+10-minute talk
+
+21/10:
+Outline for presentation:
+Opening: aim and scope of the topic
+Body: 
+(1) theory: 
+what is voIP, why it matters, real-world examples
+what is voice call in telecom terms
+difference between PSTN and VoIP
+how voice call works, CS & PS network, ims, sip register and call flow
+(2)Demo: What've implemented, explain the logic and show demo video
+conclusion: wrap up everything, what we've learned
+
+
+
+
+Cấu trúc bài phát biểu
+
+Chào đại biểu và khán giả, giới thiệu bản thân, lý do phát biểu cảm xúc khi đứng tại đây
+
+Recap về kì thực tập: chia làm hai đợt, từng đợt diễn ra như thế nào, phải làm gì,...
+
+Những ấn tượng về kì thực tập và kỷ niệm về những thứ đó: Môi trường, kiến thức, anh chị mentor và staff, lunch...
+
+Gửi lời cảm ơn tới công ty, các anh chị mentor. tầm quan trọng của kì thực tập với STPers: nền tàng để làm tốt hơn khi trở thành staff.
+
+Hẹn gặp lại công ty vào thời gian tới. Hứa hẹn những điều mới trong tương lại gần (mong muốn trở thành nhân viên chính thức) Gửi lời chúc tới các bạn, anh chị đồng nghiệp và ban lãnh đạo.
+
