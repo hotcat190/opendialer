@@ -36,7 +36,7 @@ object SipPhoneAccount {
 
         telecomManager.registerPhoneAccount(account)
         Log.d(TAG, "SipPhoneAccount registered OK")
-        Log.d(TAG, "${telecomManager.getPhoneAccount(handle).isEnabled}")
-        Log.d(TAG, "${telecomManager.getPhoneAccount(handle).address.toString()}")
+        Log.d(TAG, "enabled: ${telecomManager.getPhoneAccount(handle).isEnabled}")
+        Log.d(TAG, "address: ${telecomManager.getPhoneAccount(handle).address}")
     }
 }
